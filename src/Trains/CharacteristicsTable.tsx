@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, memo} from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -12,25 +12,29 @@ import {isValid} from "../utils/isValid";
 import "./Trains.css"
 
 
-const TableCell = ({getValue, row, column, table}: any) => {
-  const initialValue = getValue();
-  const [value, setValue] = useState(initialValue);
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-  const onBlur = () => {
-    table.options.meta?.updateData(row.index, column.id, value);
-  };
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={onBlur}
-      style={isValid({header: column.id, value}) ? undefined : {color: "red"}}
-    />
-  );
-};
+const TableCell = memo(({getValue, row, column, table}: any) => {
+    const initialValue = getValue();
+    const [value, setValue] = useState(initialValue);
+    useEffect(() => {
+      setValue(initialValue);
+    }, [initialValue]);
+    const onBlur = () => {
+      table.options.meta?.updateData(row.index, column.id, value);
+    };
+    return (
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={onBlur}
+        style={isValid({header: column.id, value}) ? undefined : {color: "red"}}
+      />
+    );
+  },
+  (prevProps, nextProps) => {
+    return String(prevProps.row.original[prevProps.column.id]) === String(nextProps.row.original[nextProps.column.id])
+  }
+);
 const columnHelper = createColumnHelper<CharacteristicsType>();
 const columns = [
   columnHelper.accessor("engineAmperage", {
